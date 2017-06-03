@@ -28,7 +28,7 @@ def measure(url):
 
 def main():
     url = sys.argv[1]
-    print measure(url)
+    print measure(url.decode('utf-8'))
 
 
 if __name__ == "__main__":

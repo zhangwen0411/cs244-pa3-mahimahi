@@ -16,6 +16,7 @@ MAHIMAHI_RECORD_DIR = "record"
 WPR_RECORD_FILE = "record.wpr"
 DELAY = 100
 TRACE = "5Mbps_trace"
+BW = "5Mbit/s"
 MEASURE_DIR = "measurements-%d-%s" % (DELAY, TRACE)
 RUNS = 25
 TIMEOUT = 180 # seconds
@@ -61,16 +62,16 @@ def record_wpr(website):
     if wpr_record_file.exists():
         wpr_record_file.unlink()
 
-    wpr_command = ["./replay.py", "--no-dns_forwarding", "--record",
+    wpr_command = ["./replay.py", "-l", "critical", "--no-dns_forwarding", "--record",
             os.path.join(os.getcwd(), WPR_RECORD_FILE)]
-    proc = subprocess.Popen(wpr_command, cwd="web-page-replay") #, stdout=PIPE, stderr=PIPE)
+    proc = subprocess.Popen(wpr_command, cwd="web-page-replay")
     try:
         time.sleep(2)
         run(["./chrome-fetch-host-resolver.py", website])
         time.sleep(2)
     finally:
         proc.send_signal(SIGINT)
-        _, errs = proc.communicate(timeout=2)
+        proc.wait(timeout=2)
 
     if proc.returncode != 0:
         raise Exception(errs)
@@ -81,16 +82,16 @@ def measure_wpr(website):
     if not wpr_record_file.exists():
         raise FileNotFoundError(WPR_RECORD_FILE)
 
-    wpr_command = ["./replay.py", os.path.join(os.getcwd(), WPR_RECORD_FILE)]
-    proc = subprocess.Popen(wpr_command, cwd="web-page-replay", stdout=PIPE,
-            stderr=PIPE)
+    wpr_command = ["./replay.py", "-l", "critical", "--up", BW, "--down", BW,
+            "--delay_ms=%d" % (2*DELAY), os.path.join(os.getcwd(), WPR_RECORD_FILE)]
+    proc = subprocess.Popen(wpr_command, cwd="web-page-replay")
     try:
         time.sleep(2)
-        measure = int(run(SHELLS + ["./measure.py", website]))
+        measure = int(run(["./measure.py", website]))
         time.sleep(1)
     finally:
         proc.send_signal(SIGINT)
-        _, errs = proc.communicate(timeout=2)
+        proc.wait(timeout=2)
 
     if proc.returncode != 0:
         raise Exception(errs)
@@ -117,39 +118,39 @@ def measure(website, result_path):
         success = False
         for _ in range(RETRIES):
             try:
-                raw_raw_measure = int(run(["./measure.py", website]))
-                dot()
-
-                record_wpr(website)
-                dot()
-
-                wpr_measure = measure_wpr(website)
-                dot()
-
-                print(raw_raw_measure, wpr_measure)
-
-                success = True
-                sys.exit(0)
-
                 start_time = time.perf_counter()
+
+                # Raw measurement (network simulation by Mahimahi)
                 raw_measure = int(run(SHELLS + ["./measure.py", website]))
                 dot()
 
-                if Path(MAHIMAHI_RECORD_DIR).exists():
-                    shutil.rmtree(MAHIMAHI_RECORD_DIR)
-                run("mm-webrecord", MAHIMAHI_RECORD_DIR, "./chrome-fetch.py", website)
+                # Web-page-replay record
+                record_wpr(website)
                 dot()
 
+                # Mahimahi record
+                if Path(MAHIMAHI_RECORD_DIR).exists():
+                    shutil.rmtree(MAHIMAHI_RECORD_DIR)
+                run(["mm-webrecord", MAHIMAHI_RECORD_DIR, "./chrome-fetch.py",
+                    website])
+                dot()
+
+                # Web-page-replay measure
+                wpr_measure = measure_wpr(website)
+                dot()
+
+                # Mahimahi measure (multiple server)
                 multi_measure = int(run(["mm-webreplay", MAHIMAHI_RECORD_DIR] +
                     SHELLS + ["./measure.py", website]))
                 dot()
 
+                # Mahimahi measure (single server)
                 single_measure = int(run(["mm-webreplay", "--single-server",
                     MAHIMAHI_RECORD_DIR] + SHELLS + ["./measure.py", website]))
                 dot()
 
-                atomic_write("%d,%d,%d" % (raw_measure, multi_measure,
-                    single_measure), str(result_file))
+                atomic_write("%d,%d,%d,%d" % (raw_measure, multi_measure,
+                    single_measure, wpr_measure), str(result_file))
                 end_time = time.perf_counter()
 
                 print(" {0}".format(end_time - start_time), file=sys.stderr)
