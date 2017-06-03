@@ -63,8 +63,7 @@ def record_wpr(website):
 
     wpr_command = ["./replay.py", "--no-dns_forwarding", "--record",
             os.path.join(os.getcwd(), WPR_RECORD_FILE)]
-    proc = subprocess.Popen(wpr_command, cwd="web-page-replay", stdout=PIPE,
-            stderr=PIPE)
+    proc = subprocess.Popen(wpr_command, cwd="web-page-replay") #, stdout=PIPE, stderr=PIPE)
     try:
         time.sleep(2)
         run(["./chrome-fetch-host-resolver.py", website])
@@ -118,11 +117,16 @@ def measure(website, result_path):
         success = False
         for _ in range(RETRIES):
             try:
+                raw_raw_measure = int(run(["./measure.py", website]))
+                dot()
+
                 record_wpr(website)
                 dot()
 
                 wpr_measure = measure_wpr(website)
                 dot()
+
+                print(raw_raw_measure, wpr_measure)
 
                 success = True
                 sys.exit(0)
@@ -165,7 +169,8 @@ def main():
     print(file=sys.stderr)
 
     result_path = Path(MEASURE_DIR)
-    result_path.mkdir(exist_ok=True)
+    if not result_path.exists():
+        result_path.mkdir()
     for website in sys.stdin:
         website = website.strip()
         measure(website, result_path)
