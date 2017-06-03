@@ -16,10 +16,9 @@ def main():
     try:
         wd.get(url)
     finally:
-        import time; time.sleep(5)
+        import time; time.sleep(3)
         wd.quit()
 
 
 if __name__ == "__main__":
     main()
-
