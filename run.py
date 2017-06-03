@@ -18,14 +18,15 @@ DELAY = 100
 TRACE = "5Mbps_trace"
 BW = "5Mbit/s"
 MEASURE_DIR = "measurements-%d-%s" % (DELAY, TRACE)
-RUNS = 25
+# RUNS = 25
+RUNS = 2
 TIMEOUT = 180 # seconds
 RETRIES = 3
 
 SHELLS = ["mm-delay", str(DELAY), "mm-link", TRACE, TRACE, "--"]
 
 
-def run(args):
+def run(args, cwd=None):
     try:  # Try to clean up.
         subprocess.run(["killall", "chromedriver"], stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE, timeout=2)
@@ -35,7 +36,7 @@ def run(args):
         pass
 
     proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            preexec_fn=demote)
+            preexec_fn=demote, cwd=cwd)
     try:
         outs, errs = proc.communicate(timeout=TIMEOUT)
         if proc.returncode != 0:
@@ -120,12 +121,21 @@ def measure(website, result_path):
             try:
                 start_time = time.perf_counter()
 
-                # Raw measurement (network simulation by Mahimahi)
-                raw_measure = int(run(SHELLS + ["./measure.py", website]))
+                # Raw measurement (network simulation by WPR TrafficShaper)
+                wpr_raw_measure = int(run(["./shaped-measure.py", website,
+                    str(DELAY*2), BW], cwd="web-page-replay"))
                 dot()
 
                 # Web-page-replay record
                 record_wpr(website)
+                dot()
+
+                # Web-page-replay measure
+                wpr_measure = measure_wpr(website)
+                dot()
+
+                # Raw measurement (network simulation by Mahimahi)
+                mahimahi_raw_measure = int(run(SHELLS + ["./measure.py", website]))
                 dot()
 
                 # Mahimahi record
@@ -133,10 +143,6 @@ def measure(website, result_path):
                     shutil.rmtree(MAHIMAHI_RECORD_DIR)
                 run(["mm-webrecord", MAHIMAHI_RECORD_DIR, "./chrome-fetch.py",
                     website])
-                dot()
-
-                # Web-page-replay measure
-                wpr_measure = measure_wpr(website)
                 dot()
 
                 # Mahimahi measure (multiple server)
@@ -149,8 +155,9 @@ def measure(website, result_path):
                     MAHIMAHI_RECORD_DIR] + SHELLS + ["./measure.py", website]))
                 dot()
 
-                atomic_write("%d,%d,%d,%d" % (raw_measure, multi_measure,
-                    single_measure, wpr_measure), str(result_file))
+                atomic_write("%d,%d,%d,%d,%d\n" % (wpr_raw_measure, wpr_measure,
+                    mahimahi_raw_measure, multi_measure, single_measure),
+                    str(result_file))
                 end_time = time.perf_counter()
 
                 print(" {0}".format(end_time - start_time), file=sys.stderr)
