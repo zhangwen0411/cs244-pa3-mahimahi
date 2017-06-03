@@ -2,3 +2,6 @@
 	path = mahimahi
 	url = https://github.com/zhangwen0411/mahimahi.git
 	branch = cs244-pa3
+[submodule "web-page-replay"]
+	path = web-page-replay
+	url = https://github.com/chromium/web-page-replay.git
