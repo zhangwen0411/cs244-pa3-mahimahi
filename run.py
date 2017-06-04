@@ -18,8 +18,7 @@ DELAY = 100
 TRACE = "5Mbps_trace"
 BW = "5Mbit/s"
 MEASURE_DIR = "measurements-%d-%s" % (DELAY, TRACE)
-# RUNS = 25
-RUNS = 1
+RUNS = 25
 TIMEOUT = 120 # seconds
 RETRIES = 3
 
