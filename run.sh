@@ -6,4 +6,4 @@ sudo Xvfb :99 -ac -noreset &
 export DISPLAY=:99
 
 # Run the experiment!
-sudo ./run.py $USER
+sudo ./good-run.py $USER 2> log-err
