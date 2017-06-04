@@ -266,7 +266,7 @@ def measure(website):
 
 
 def main():
-    print("DELAY = %d, TRACE = %s" % (DELAY, TRACE), file=sys.stderr)
+    print("DELAY = %d, TRACE = %s, RUNS = %d" % (DELAY, TRACE, RUNS), file=sys.stderr)
     print(file=sys.stderr)
     sys.stderr.flush()
     cleanup_all()
@@ -278,8 +278,8 @@ def main():
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        sys.exit("Usage: ./run.py user")
+    if len(sys.argv) < 3:
+        sys.exit("Usage: ./run.py user path [runs]")
 
     try:
         pw_record = pwd.getpwnam(sys.argv[1])
@@ -291,6 +291,9 @@ if __name__ == "__main__":
         user_gid = pw_record.pw_gid
         os.setgid(user_gid)
         os.setuid(user_uid)
+
+    if len(sys.argv) >= 4:
+        RUNS = int(sys.argv[3])
 
     main()
     print("DONE!", file=sys.stderr)

@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+"""
+Usage: ./plot.py input_file output_file
+"""
+
 import csv
 from collections import defaultdict
 import sys
