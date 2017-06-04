@@ -19,8 +19,8 @@ TRACE = "5Mbps_trace"
 BW = "5Mbit/s"
 MEASURE_DIR = "measurements-%d-%s" % (DELAY, TRACE)
 # RUNS = 25
-RUNS = 2
-TIMEOUT = 180 # seconds
+RUNS = 1
+TIMEOUT = 120 # seconds
 RETRIES = 3
 
 SHELLS = ["mm-delay", str(DELAY), "mm-link", TRACE, TRACE, "--"]
@@ -181,6 +181,7 @@ def main():
         result_path.mkdir()
     for website in sys.stdin:
         website = website.strip()
+        if not website: break
         measure(website, result_path)
 
 
