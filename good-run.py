@@ -26,11 +26,9 @@ SHELLS = ["mm-delay", str(DELAY), "mm-link", TRACE, TRACE, "--"]
 
 def cleanup_all():
     try:  # Try to clean up.
-        subprocess.run(["killall", "chromedriver"], stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE, timeout=2)
-        subprocess.run(["killall", "chrome"], stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE, timeout=2)
-        os.system("yes | sudo ipfw flush")
+        os.system("killall chromedriver 2>/dev/null")
+        os.system("killall chrome 2>/dev/null")
+        os.system("(yes | sudo ipfw flush) >/dev/null 2>/dev/null")
     except Exception:
         pass
 
@@ -253,7 +251,12 @@ def measure(website):
     mahimahi_singles = get_mahimahi_singles(website)
     wprs = get_wpr_measures(website)
 
-    with open("%s.csv" % website, "w") as f:
+    filename = "%s.csv" % website
+    result_dir = Path(sys.argv[2])
+    if not result_dir.exists():
+        result_dir.mkdir()
+
+    with open(os.path.join(sys.argv[2], filename), "w") as f:
         print(website, file=f)
         print_list(mahimahi_raws, file=f)
         print_list(wpr_raws, file=f)
@@ -263,7 +266,7 @@ def measure(website):
 
 
 def main():
-    print("DELAY = %d, TRACE = %s" % (DELAY, TRACE), file=sys.stderr)
+    print("DELAY = %d, TRACE = %s, RUNS = %d" % (DELAY, TRACE, RUNS), file=sys.stderr)
     print(file=sys.stderr)
     sys.stderr.flush()
     cleanup_all()
@@ -275,8 +278,8 @@ def main():
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        sys.exit("Usage: ./run.py user")
+    if len(sys.argv) < 3:
+        sys.exit("Usage: ./run.py user path [runs]")
 
     try:
         pw_record = pwd.getpwnam(sys.argv[1])
@@ -288,6 +291,9 @@ if __name__ == "__main__":
         user_gid = pw_record.pw_gid
         os.setgid(user_gid)
         os.setuid(user_uid)
+
+    if len(sys.argv) >= 4:
+        RUNS = int(sys.argv[3])
 
     main()
     print("DONE!", file=sys.stderr)
