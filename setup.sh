@@ -17,11 +17,14 @@ protobuf-compiler libprotobuf-dev pkg-config libssl-dev dnsmasq-base ssl-cert li
 libcairo2-dev libpango1.0-dev iproute2 apache2-dev apache2-bin \
 apache2-api-20120211 python-pip xvfb google-chrome-stable
 
+cp my_trafficshaper.py web-page-replay/
+cp shaped-measure.py web-page-replay/
+
 pushd mahimahi
 ./autogen.sh && ./configure && make && make install
 popd
 
-pip install -r requirements.txt
+pip install selenium matplotlib
 
 chmod +x chromedriver
 cp chromedriver /usr/bin/
