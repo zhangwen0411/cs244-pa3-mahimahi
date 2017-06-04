@@ -26,11 +26,9 @@ SHELLS = ["mm-delay", str(DELAY), "mm-link", TRACE, TRACE, "--"]
 
 def cleanup_all():
     try:  # Try to clean up.
-        subprocess.run(["killall", "chromedriver"], stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE, timeout=2)
-        subprocess.run(["killall", "chrome"], stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE, timeout=2)
-        os.system("yes | sudo ipfw flush")
+        os.system("killall chromedriver 2>/dev/null")
+        os.system("killall chrome 2>/dev/null")
+        os.system("yes | sudo ipfw flush >/dev/null 2>/dev/null")
     except Exception:
         pass
 
