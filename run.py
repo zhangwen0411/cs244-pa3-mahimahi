@@ -200,3 +200,4 @@ if __name__ == "__main__":
         os.setuid(user_uid)
 
     main()
+    print("DONE!", file=sys.stderr)
