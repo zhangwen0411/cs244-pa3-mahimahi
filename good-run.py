@@ -28,7 +28,7 @@ def cleanup_all():
     try:  # Try to clean up.
         os.system("killall chromedriver 2>/dev/null")
         os.system("killall chrome 2>/dev/null")
-        os.system("yes | sudo ipfw flush >/dev/null 2>/dev/null")
+        os.system("(yes | sudo ipfw flush) >/dev/null 2>/dev/null")
     except Exception:
         pass
 
@@ -251,7 +251,12 @@ def measure(website):
     mahimahi_singles = get_mahimahi_singles(website)
     wprs = get_wpr_measures(website)
 
-    with open("%s.csv" % website, "w") as f:
+    filename = "%s.csv" % website
+    result_dir = Path(sys.argv[2])
+    if not result_dir.exists():
+        result_dir.mkdir()
+
+    with open(os.path.join(sys.argv[2], filename), "w") as f:
         print(website, file=f)
         print_list(mahimahi_raws, file=f)
         print_list(wpr_raws, file=f)
