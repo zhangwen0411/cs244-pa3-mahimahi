@@ -24,7 +24,7 @@ Here we provide instructions for running the experiment sequentially. Since our 
   - You can type `ssh cs244@xxx.xxx.xxx.xxx` in the terminal and enter the password.
   - Alternatively, go back to the [VM Instances](https://console.cloud.google.com/compute/instances) page and click on **SSH** next to this instance. After you’re logged in, type `su cs244`, enter the password, and type `cd` to go back to the home directory.
 10. Type `cd cs244-pa3-mahimahi`.
-11. You’re now ready to run the experiment! The short version may take up to 1.5 hours. To run the experiment in the background, type `screen` and press <Enter>, then type `./reproduce.sh`. You should see something like:
+11. You’re now ready to run the experiment! The short version may take up to 1.5 hours. To run the experiment in the background, type `screen` and press Enter, then run `./reproduce.sh`. You should see something like:
     ```
     DELAY = 100, TRACE = 5Mbps_trace, RUNS = 5
     
