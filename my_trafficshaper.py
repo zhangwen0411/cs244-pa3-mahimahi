@@ -97,6 +97,9 @@ class TrafficShaper(object):
     half_delay_ms = int(self.delay_ms) / 2  # split over up/down links
 
     try:
+      # Don't shape on 127.0.0.1.  Any external traffic goes through the
+      # external interface.
+
       # Configure upload shaping.
       platformsettings.ipfw(
           'pipe', self._UPLOAD_PIPE,
