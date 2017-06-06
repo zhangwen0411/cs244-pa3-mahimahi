@@ -38,3 +38,5 @@ Here we provide instructions for running the experiment sequentially. Since our 
 
 ![Sample output plot](https://d2mxuefqeaa7sj.cloudfront.net/s_6BFA2CF32BCD0EC2AAE8F9BFE9054ABD9D4B6D049A5F91F3301CA6C5163CD742_1496611295640_errs_cdf.png)
 
+If you'd like to run the full experiment, you can open `reproduce.sh` in a text editor, replace
+`some-websites.txt` with `all-websites.txt`, change `runs` to `25`, and re-run the script.
